@@ -69,7 +69,7 @@ void setup()
 	gpio_set_level(GPIO_NUM_27, 0);
 
 	const uart_config_t uart_config = {
-		.baud_rate = 115200,
+		.baud_rate = 9600,
 		.data_bits = UART_DATA_8_BITS,
 		.parity = UART_PARITY_DISABLE,
 		.stop_bits = UART_STOP_BITS_1,
