@@ -230,6 +230,7 @@ uint8_t topleft = 0;
 uint8_t topright = 0;
 uint8_t period = 0;
 uint16_t timer_seconds = 0;
+uint16_t previous_timer_seconds;
 uint8_t timer_info = 0;
 
 uint64_t last_tap_time = 0;
@@ -479,6 +480,10 @@ void up_digit(void *arg)
 			*which_int8 -= 1;
 		} else
 		{
+			if(multiplier == 100 && num > 1)
+			{
+				num = 1;
+			}
 			*which_int8 -= ((*which_int8 % modulo / multiplier) % limiter) * multiplier;
 			*which_int8 += num * (multiplier);
 		}
@@ -493,7 +498,7 @@ void up_digit(void *arg)
 		} else
 		{
 			*which_int16 -= ((*which_int16 % modulo / multiplier) % limiter) * multiplier;
-			*which_int16 += num * (multiplier);
+			*which_int16 += num * (multiplier);	
 		}
 	} else if(which_size == SIZE_INT)
 	{
@@ -660,6 +665,7 @@ void lcd_test(void *pvParameters)
 	while (1)
 	{
 #define TAP_DELAY (600*1000)
+		previous_timer_seconds = timer_seconds;
 		int newpos = -1;
 		if((-4 <= input_char && input_char <= -1) &&
 		   ((esp_timer_get_time() - last_tap_time > TAP_DELAY) || !already_moved)) {
@@ -706,6 +712,10 @@ void lcd_test(void *pvParameters)
 		hd44780_puts(&lcd, stm.s2);
 		hd44780_gotoxy(&lcd, 0, 0);
 
+		if(previous_timer_seconds == 2 && timer_seconds == 1 && ((timer_info & 4) == 4)) {
+			send_speaker(NULL);
+		}
+
 		vTaskDelay(pdMS_TO_TICKS(50));
 	}
 }
@@ -713,7 +723,7 @@ void lcd_test(void *pvParameters)
 void init(void)
 {
 	const uart_config_t uart_config = {
-		.baud_rate = 115200,
+		.baud_rate = 9600,
 		.data_bits = UART_DATA_8_BITS,
 		.parity = UART_PARITY_DISABLE,
 		.stop_bits = UART_STOP_BITS_1,
